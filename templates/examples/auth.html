@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Demo Auth JWT — Django API Lab{% endblock %}
+
+{% block content %}
+<a class="back" href="/">← Volver</a>
+<h1>Demo — Autenticación JWT</h1>
+<p class="lead">
+  Registrate o logueate para obtener un <strong>token</strong>, después llamá al
+  endpoint protegido <code>/api/auth/me/</code> con ese token.
+</p>
+
+<div class="two-col">
+  <section class="card">
+    <h2>1. Registro</h2>
+    <form id="register-form" class="stack">
+      <input id="r-user" placeholder="usuario" required>
+      <input id="r-email" type="email" placeholder="email">
+      <input id="r-pass" type="password" placeholder="contraseña" required>
+      <button class="btn" type="submit">Registrarme</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>2. Login</h2>
+    <form id="login-form" class="stack">
+      <input id="l-user" placeholder="usuario" required>
+      <input id="l-pass" type="password" placeholder="contraseña" required>
+      <button class="btn" type="submit">Obtener token</button>
+    </form>
+    <p>Token actual: <code id="token-state">ninguno</code></p>
+    <button id="me-btn" class="btn ghost" disabled>3. Llamar /me/</button>
+  </section>
+</div>
+
+<pre id="output" class="output">La salida de la API aparece acá…</pre>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let accessToken = null;
+const out = document.getElementById("output");
+const tokenState = document.getElementById("token-state");
+const meBtn = document.getElementById("me-btn");
+
+function show(data) { out.textContent = JSON.stringify(data, null, 2); }
+
+const $ = (id) => document.getElementById(id);
+
+document.getElementById("register-form").onsubmit = async (e) => {
+  e.preventDefault();
+  const res = await fetch("/api/auth/register/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: $("r-user").value, email: $("r-email").value, password: $("r-pass").value,
+    }),
+  });
+  show(await res.json());
+};
+
+document.getElementById("login-form").onsubmit = async (e) => {
+  e.preventDefault();
+  const res = await fetch("/api/auth/login/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username: $("l-user").value, password: $("l-pass").value }),
+  });
+  const data = await res.json();
+  show(data);
+  if (data.access) {
+    accessToken = data.access;
+    tokenState.textContent = accessToken.slice(0, 24) + "…";
+    meBtn.disabled = false;
+  }
+};
+
+meBtn.onclick = async () => {
+  const res = await fetch("/api/auth/me/", {
+    headers: { Authorization: "Bearer " + accessToken },
+  });
+  show(await res.json());
+};
+</script>
+{% endblock %}

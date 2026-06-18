@@ -1,0 +1,7 @@
+from django.apps import AppConfig
+
+
+class CrudConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.crud"
+    verbose_name = "Ejemplo: CRUD completo"

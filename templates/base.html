@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Django API — Laboratorio{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">⚙️ Django API <span>Lab</span></a>
+    <nav>
+      <a href="/ui/crud/">CRUD</a>
+      <a href="/ui/auth/">Auth JWT</a>
+      <a href="/ui/catalog/">Catálogo</a>
+      <a href="/ui/library/">Biblioteca</a>
+      <a href="/admin/" class="muted">Admin</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    Laboratorio de práctica de APIs con Django REST Framework.
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

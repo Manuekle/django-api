@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Demo Biblioteca — Django API Lab{% endblock %}
+
+{% block content %}
+<a class="back" href="/">← Volver</a>
+<h1>Demo — Biblioteca (relaciones)</h1>
+<p class="lead">
+  Lista libros desde <code>/api/library/books/</code>, mostrando el
+  <strong>autor</strong> (ForeignKey) y las <strong>etiquetas</strong>
+  (ManyToMany) que vienen anidados en la respuesta.
+</p>
+
+<div id="books" class="grid"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function load() {
+  const res = await fetch("/api/library/books/");
+  const data = await res.json();
+  const books = data.results || data;
+  const container = document.getElementById("books");
+  container.innerHTML = "";
+  if (!books.length) {
+    container.innerHTML = '<p class="empty">No hay libros. Cargá algunos en /admin/ o con el seed.</p>';
+    return;
+  }
+  for (const b of books) {
+    const tags = (b.tags || []).map((t) => `<span class="tag">${t.name}</span>`).join(" ");
+    const card = document.createElement("article");
+    card.className = "card";
+    card.innerHTML = `
+      <h2>${b.title}</h2>
+      <p class="muted">por ${b.author ? b.author.name : "—"}${b.published_year ? " · " + b.published_year : ""}</p>
+      <div class="tags">${tags}</div>`;
+    container.appendChild(card);
+  }
+}
+load();
+</script>
+{% endblock %}

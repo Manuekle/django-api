@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Demo CRUD — Django API Lab{% endblock %}
+
+{% block content %}
+<a class="back" href="/">← Volver</a>
+<h1>Demo — CRUD de tareas</h1>
+<p class="lead">
+  Consume <code>/api/crud/tasks/</code> (estilo function-based) con
+  <code>fetch</code>. Crear, marcar como completada y borrar.
+</p>
+
+<form id="task-form" class="inline-form">
+  <input id="task-title" type="text" placeholder="Nueva tarea…" required>
+  <button class="btn" type="submit">Agregar</button>
+</form>
+
+<ul id="tasks" class="list"></ul>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const API = "/api/crud/tasks/";
+const list = document.getElementById("tasks");
+
+async function load() {
+  const res = await fetch(API);
+  const tasks = await res.json();
+  list.innerHTML = "";
+  if (!tasks.length) { list.innerHTML = '<li class="empty">Sin tareas todavía.</li>'; return; }
+  for (const t of tasks) {
+    const li = document.createElement("li");
+    li.className = "list-item" + (t.done ? " done" : "");
+    li.innerHTML = `
+      <label><input type="checkbox" ${t.done ? "checked" : ""}> ${t.title}</label>
+      <button class="link-danger">borrar</button>`;
+    li.querySelector("input").onchange = () => toggle(t);
+    li.querySelector("button").onclick = () => remove(t.id);
+    list.appendChild(li);
+  }
+}
+
+async function create(title) {
+  await fetch(API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title }),
+  });
+  load();
+}
+
+async function toggle(t) {
+  await fetch(`${API}${t.id}/`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ done: !t.done }),
+  });
+  load();
+}
+
+async function remove(id) {
+  await fetch(`${API}${id}/`, { method: "DELETE" });
+  load();
+}
+
+document.getElementById("task-form").onsubmit = (e) => {
+  e.preventDefault();
+  const input = document.getElementById("task-title");
+  if (input.value.trim()) { create(input.value.trim()); input.value = ""; }
+};
+
+load();
+</script>
+{% endblock %}

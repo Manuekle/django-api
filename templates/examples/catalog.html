@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Demo Catálogo — Django API Lab{% endblock %}
+
+{% block content %}
+<a class="back" href="/">← Volver</a>
+<h1>Demo — Catálogo con filtros</h1>
+<p class="lead">
+  Combina búsqueda, filtro por categoría, ordenamiento y paginación sobre
+  <code>/api/catalog/products/</code>.
+</p>
+
+<form id="filters" class="inline-form wrap">
+  <input id="search" placeholder="Buscar…">
+  <select id="category">
+    <option value="">Todas las categorías</option>
+    <option value="tech">Tecnología</option>
+    <option value="home">Hogar</option>
+    <option value="books">Libros</option>
+    <option value="toys">Juguetes</option>
+  </select>
+  <select id="ordering">
+    <option value="-created_at">Más nuevos</option>
+    <option value="price">Precio ↑</option>
+    <option value="-price">Precio ↓</option>
+    <option value="name">Nombre A-Z</option>
+  </select>
+  <button class="btn" type="submit">Aplicar</button>
+</form>
+
+<table class="table">
+  <thead><tr><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Stock</th></tr></thead>
+  <tbody id="rows"></tbody>
+</table>
+
+<div class="pager">
+  <button id="prev" class="btn ghost" disabled>← Anterior</button>
+  <span id="page-info"></span>
+  <button id="next" class="btn ghost" disabled>Siguiente →</button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const $ = (id) => document.getElementById(id);
+let page = 1;
+
+function buildUrl() {
+  const p = new URLSearchParams();
+  if ($("search").value) p.set("search", $("search").value);
+  if ($("category").value) p.set("category", $("category").value);
+  p.set("ordering", $("ordering").value);
+  p.set("page", page);
+  return "/api/catalog/products/?" + p.toString();
+}
+
+async function load() {
+  const res = await fetch(buildUrl());
+  const data = await res.json();
+  const rows = $("rows");
+  rows.innerHTML = "";
+  for (const p of data.results || []) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${p.name}</td><td>${p.category}</td><td>$${p.price}</td><td>${p.stock}</td>`;
+    rows.appendChild(tr);
+  }
+  if (!(data.results || []).length) {
+    rows.innerHTML = '<tr><td colspan="4" class="empty">Sin resultados.</td></tr>';
+  }
+  $("prev").disabled = !data.previous;
+  $("next").disabled = !data.next;
+  $("page-info").textContent = `Página ${page} · ${data.count} productos`;
+}
+
+$("filters").onsubmit = (e) => { e.preventDefault(); page = 1; load(); };
+$("prev").onclick = () => { page--; load(); };
+$("next").onclick = () => { page++; load(); };
+
+load();
+</script>
+{% endblock %}

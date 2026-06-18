@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+  <h1>Laboratorio de APIs con Django REST Framework</h1>
+  <p>
+    Cada tarjeta es un ejemplo aislado en su propia app Django. Abrí la demo de
+    UI para verlo funcionando, o el API navegable de DRF para inspeccionar los
+    endpoints. El código de cada ejemplo trae su propio <code>README.md</code>.
+  </p>
+</section>
+
+<section class="grid">
+  {% for ex in examples %}
+  <article class="card">
+    <h2>{{ ex.title }}</h2>
+    <p>{{ ex.desc }}</p>
+    <div class="card-actions">
+      <a class="btn" href="{{ ex.ui }}">Ver demo UI</a>
+      <a class="btn ghost" href="{{ ex.api }}">API navegable</a>
+    </div>
+  </article>
+  {% endfor %}
+</section>
+{% endblock %}
