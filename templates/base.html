@@ -5,17 +5,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Django API — Laboratorio{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="/">⚙️ Django API <span>Lab</span></a>
-    <nav>
-      <a href="/ui/crud/">CRUD</a>
-      <a href="/ui/auth/">Auth JWT</a>
-      <a href="/ui/catalog/">Catálogo</a>
-      <a href="/ui/library/">Biblioteca</a>
-      <a href="/admin/" class="muted">Admin</a>
+  <div class="atmosphere" aria-hidden="true"></div>
+
+  <header class="navbar">
+    <nav class="nav-glass">
+      <a class="brand" href="/">django api <span>lab</span></a>
+      <div class="nav-links">
+        <a href="/ui/crud/">crud</a>
+        <a href="/ui/auth/">auth jwt</a>
+        <a href="/ui/catalog/">catálogo</a>
+        <a href="/ui/library/">biblioteca</a>
+        <a href="/ui/components/">componentes</a>
+        <a href="/ui/playground/">consola</a>
+        <a href="/admin/" class="muted">admin</a>
+      </div>
     </nav>
   </header>
 
@@ -24,7 +33,7 @@
   </main>
 
   <footer class="footer">
-    Laboratorio de práctica de APIs con Django REST Framework.
+    laboratorio de práctica de apis con django rest framework.
   </footer>
 
   {% block scripts %}{% endblock %}

@@ -38,6 +38,22 @@ EXAMPLES = [
         "api": "/api/library/",
         "ui": "/ui/library/",
     },
+    {
+        "slug": "components",
+        "title": "Formularios y componentes",
+        "desc": "Playground de inputs: select, checkbox, radio, switch, slider "
+                "y addons. Crea un producto real vía POST al catálogo.",
+        "api": "/api/catalog/products/",
+        "ui": "/ui/components/",
+    },
+    {
+        "slug": "playground",
+        "title": "Consola de peticiones",
+        "desc": "Cliente HTTP minimalista: elegí método, endpoint y body JSON "
+                "para inspeccionar cualquier respuesta de la API.",
+        "api": "/api/",
+        "ui": "/ui/playground/",
+    },
 ]
 
 
@@ -59,3 +75,11 @@ def catalog(request):
 
 def library(request):
     return render(request, "examples/library.html")
+
+
+def components(request):
+    return render(request, "examples/components.html")
+
+
+def playground(request):
+    return render(request, "examples/playground.html")

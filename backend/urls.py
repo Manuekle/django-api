@@ -21,6 +21,8 @@ urlpatterns = [
     path("ui/auth/", ui_views.auth, name="ui-auth"),
     path("ui/catalog/", ui_views.catalog, name="ui-catalog"),
     path("ui/library/", ui_views.library, name="ui-library"),
+    path("ui/components/", ui_views.components, name="ui-components"),
+    path("ui/playground/", ui_views.playground, name="ui-playground"),
 
     # APIs — un ejemplo por app
     path("api/crud/", include("apps.crud.urls")),

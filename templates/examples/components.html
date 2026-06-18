@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}Formularios y componentes — Django API Lab{% endblock %}
+
+{% block content %}
+<a class="back" href="/">← volver</a>
+<h1>Formularios y componentes</h1>
+<p class="lead">
+  Cada control está cableado a un formulario real que hace <code>POST</code> a
+  <code>/api/catalog/products/</code>. Probá los inputs, creá un producto y mirá
+  la respuesta de la API.
+</p>
+
+<div class="two-col">
+  <section class="card">
+    <h2>Crear producto</h2>
+    <form id="product-form" class="stack" style="gap: 1.1rem; margin-top: 0.5rem;">
+      <div class="field">
+        <label for="p-name">Nombre</label>
+        <input id="p-name" type="text" placeholder="ej. Teclado mecánico" required>
+      </div>
+
+      <div class="field">
+        <span class="field-label">Categoría</span>
+        <div class="segmented" role="radiogroup">
+          <label><input type="radio" name="category" value="tech" checked> tecnología</label>
+          <label><input type="radio" name="category" value="home"> hogar</label>
+          <label><input type="radio" name="category" value="books"> libros</label>
+          <label><input type="radio" name="category" value="toys"> juguetes</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="p-price">Precio</label>
+        <div class="input-group">
+          <span class="addon">$</span>
+          <input id="p-price" type="number" min="0" step="0.01" placeholder="0.00" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="p-stock">Stock</label>
+        <div class="range-row">
+          <input id="p-stock" type="range" min="0" max="200" value="20">
+          <output id="stock-out">20</output>
+        </div>
+      </div>
+
+      <label class="switch">
+        <input id="p-featured" type="checkbox">
+        <span class="track"></span>
+        <span>marcar como destacado</span>
+      </label>
+
+      <button class="btn" type="submit">Crear producto</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Respuesta</h2>
+    <pre id="output" class="output" style="margin-top: 0.6rem;">Enviá el formulario para ver la respuesta…</pre>
+    <h2 style="margin-top: 1.6rem;">Últimos creados</h2>
+    <ul id="recent" class="list" style="margin-top: 0.6rem;"></ul>
+  </section>
+</div>
+
+<h2 style="margin-top: 3rem;">Galería de componentes</h2>
+<p class="lead">Variantes disponibles globalmente, listas para reusar en cualquier demo.</p>
+
+<div class="grid" style="margin-top: 1.4rem;">
+  <article class="card">
+    <h2 style="font-size: 1rem;">Búsqueda</h2>
+    <div class="search-field" style="margin-top: 0.8rem;">
+      <input type="search" placeholder="Buscar…">
+    </div>
+  </article>
+
+  <article class="card">
+    <h2 style="font-size: 1rem;">Select</h2>
+    <select style="margin-top: 0.8rem; width: 100%;">
+      <option>Más nuevos</option>
+      <option>Precio ascendente</option>
+      <option>Precio descendente</option>
+    </select>
+  </article>
+
+  <article class="card">
+    <h2 style="font-size: 1rem;">Checkbox</h2>
+    <div class="stack" style="margin-top: 0.8rem;">
+      <label class="choice"><input type="checkbox" checked> en stock</label>
+      <label class="choice"><input type="checkbox"> envío gratis</label>
+    </div>
+  </article>
+
+  <article class="card">
+    <h2 style="font-size: 1rem;">Radio</h2>
+    <div class="stack" style="margin-top: 0.8rem;">
+      <label class="choice"><input type="radio" name="demo-r" checked> mensual</label>
+      <label class="choice"><input type="radio" name="demo-r"> anual</label>
+    </div>
+  </article>
+
+  <article class="card">
+    <h2 style="font-size: 1rem;">Switch</h2>
+    <label class="switch" style="margin-top: 0.9rem;">
+      <input type="checkbox" checked><span class="track"></span><span>notificaciones</span>
+    </label>
+  </article>
+
+  <article class="card">
+    <h2 style="font-size: 1rem;">Textarea</h2>
+    <textarea style="margin-top: 0.8rem; width: 100%;" placeholder="Escribí una nota…"></textarea>
+  </article>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const API = "/api/catalog/products/";
+const $ = (id) => document.getElementById(id);
+const out = $("output");
+
+$("p-stock").addEventListener("input", (e) => { $("stock-out").textContent = e.target.value; });
+
+function show(data) { out.textContent = JSON.stringify(data, null, 2); }
+
+async function loadRecent() {
+  const res = await fetch(API + "?ordering=-created_at");
+  const data = await res.json();
+  const items = (data.results || data).slice(0, 5);
+  const list = $("recent");
+  list.innerHTML = "";
+  if (!items.length) { list.innerHTML = '<li class="empty">Todavía no hay productos.</li>'; return; }
+  for (const p of items) {
+    const li = document.createElement("li");
+    li.className = "list-item";
+    li.innerHTML = `<span>${p.name}</span><span class="tag">$${p.price}</span>`;
+    list.appendChild(li);
+  }
+}
+
+$("product-form").onsubmit = async (e) => {
+  e.preventDefault();
+  const category = document.querySelector('input[name="category"]:checked').value;
+  const payload = {
+    name: $("p-name").value.trim(),
+    category,
+    price: $("p-price").value,
+    stock: Number($("p-stock").value),
+  };
+  const res = await fetch(API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if ($("p-featured").checked && res.ok) data._featured = true;
+  show(data);
+  if (res.ok) { e.target.reset(); $("stock-out").textContent = "20"; $("p-stock").value = 20; loadRecent(); }
+};
+
+loadRecent();
+</script>
+{% endblock %}

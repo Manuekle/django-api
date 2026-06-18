@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Consola de peticiones — Django API Lab{% endblock %}
+
+{% block content %}
+<a class="back" href="/">← volver</a>
+<h1>Consola de peticiones</h1>
+<p class="lead">
+  Un cliente HTTP minimalista para explorar cualquier endpoint del laboratorio.
+  Elegí método, ruta y body, agregá un <code>Bearer</code> token si el endpoint
+  lo requiere, y mirá la respuesta cruda.
+</p>
+
+<form id="req-form" class="stack" style="gap: 1.1rem;">
+  <div class="inline-form wrap" style="margin: 0;">
+    <div class="field" style="flex: 0 0 130px;">
+      <span class="field-label">Método</span>
+      <select id="method">
+        <option>GET</option>
+        <option>POST</option>
+        <option>PUT</option>
+        <option>PATCH</option>
+        <option>DELETE</option>
+      </select>
+    </div>
+    <div class="field" style="flex: 1;">
+      <label for="url">Endpoint</label>
+      <input id="url" type="text" value="/api/catalog/products/" spellcheck="false" required>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="token">Bearer token <span class="faint">(opcional)</span></label>
+    <input id="token" type="text" placeholder="pegá un access token de /ui/auth/" spellcheck="false">
+  </div>
+
+  <div class="field" id="body-field">
+    <label for="body">Body JSON</label>
+    <textarea id="body" spellcheck="false" placeholder='{ "name": "Demo", "category": "tech", "price": "9.99", "stock": 5 }'></textarea>
+    <span class="hint">Se ignora en GET y DELETE.</span>
+  </div>
+
+  <div class="inline-form" style="margin: 0;">
+    <button class="btn" type="submit">Enviar</button>
+    <button class="btn ghost" type="button" id="clear">Limpiar</button>
+    <span id="status-pill" class="tag" style="display: none; align-self: center;"></span>
+  </div>
+</form>
+
+<pre id="output" class="output">La respuesta aparecerá acá…</pre>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const $ = (id) => document.getElementById(id);
+const out = $("output");
+const pill = $("status-pill");
+
+function toggleBody() {
+  const m = $("method").value;
+  $("body-field").style.display = (m === "GET" || m === "DELETE") ? "none" : "flex";
+}
+$("method").addEventListener("change", toggleBody);
+toggleBody();
+
+$("clear").onclick = () => { out.textContent = "La respuesta aparecerá acá…"; pill.style.display = "none"; };
+
+$("req-form").onsubmit = async (e) => {
+  e.preventDefault();
+  const method = $("method").value;
+  const url = $("url").value.trim();
+  const headers = {};
+  const opts = { method, headers };
+
+  if (method !== "GET" && method !== "DELETE") {
+    headers["Content-Type"] = "application/json";
+    const raw = $("body").value.trim();
+    if (raw) {
+      try { JSON.parse(raw); } catch (err) {
+        out.textContent = "Body JSON inválido: " + err.message;
+        return;
+      }
+      opts.body = raw;
+    }
+  }
+  if ($("token").value.trim()) headers["Authorization"] = "Bearer " + $("token").value.trim();
+
+  out.textContent = "Enviando…";
+  try {
+    const res = await fetch(url, opts);
+    pill.style.display = "inline-block";
+    pill.textContent = res.status + " " + res.statusText;
+    pill.style.color = res.ok ? "var(--accent)" : "var(--danger)";
+    pill.style.background = res.ok ? "var(--accent-soft)" : "rgba(255,122,133,0.12)";
+    const text = await res.text();
+    try { out.textContent = JSON.stringify(JSON.parse(text), null, 2); }
+    catch { out.textContent = text || "(sin cuerpo)"; }
+  } catch (err) {
+    out.textContent = "Error de red: " + err.message;
+  }
+};
+</script>
+{% endblock %}
